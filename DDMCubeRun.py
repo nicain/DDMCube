@@ -23,16 +23,17 @@ from subprocess import Popen, PIPE
 ################################################################################
 
 # Define job settings:
-settings={
+settings={									# Example values:
 'xMean':list(scipy.linspace(3,.55,1)),		# 3
 'xStd':list(scipy.linspace(12.8,1,1)),		# 12.8
 'xTau':list(scipy.linspace(20,1,1)),		# 20
 'theta':list(scipy.linspace(.5,20,10)),		# 10
-'dt':list(scipy.linspace(.02,1,1))			# .02
+'dt':list(scipy.linspace(.02,1,1)),			# .02
+'chop':list(scipy.linspace(0,10,2))			# 0
 }
 
 # Define job parameters:
-quickName = 'ppExp'
+quickName = 'firstChop'
 numberOfJobs = 5000
 verbose = 1
 multiProc = 1

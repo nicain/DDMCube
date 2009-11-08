@@ -23,7 +23,7 @@ def DDMOU(settings, int perLoc, tempResultDir, quickName, totalUUID):
 	from scipy import zeros
 	
 	# C initializations
-	cdef float xCurr, tCurr, yCurr, xMean, xStd, xTau, dt, theta, crossTimes, results
+	cdef float xCurr, tCurr, yCurr, xMean, xStd, xTau, dt, theta, crossTimes, results, chop
 	cdef double mean = 0, std = 1
 	cdef unsigned long mySeed[624]
 	cdef c_MTRand myTwister
@@ -50,7 +50,7 @@ def DDMOU(settings, int perLoc, tempResultDir, quickName, totalUUID):
 	# Parameter space loop:
 	counter = 0
 	for currentSettings in settingsIterator:
-		dt, theta, xMean, xStd, xTau =  currentSettings
+		chop, dt, theta, xMean, xStd, xTau =  currentSettings
 
 		crossTimes = 0
 		results = 0
@@ -60,7 +60,10 @@ def DDMOU(settings, int perLoc, tempResultDir, quickName, totalUUID):
 			yCurr = 0
 			while abs(yCurr) < theta:
 				xCurr = xCurr+dt*(xMean - xCurr)/xTau + xStd*sqrt(2*dt/xTau)*myTwister.randNorm(mean,std)
-				yCurr = yCurr + .005*dt*xCurr
+				if abs(xCurr) < chop:
+					yCurr = yCurr
+				else:
+					yCurr = yCurr + .005*dt*xCurr
 				tCurr=tCurr+dt
 			crossTimes += tCurr
 			if yCurr > theta:
