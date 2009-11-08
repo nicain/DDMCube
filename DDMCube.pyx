@@ -16,10 +16,11 @@ cdef extern from "math.h":
 ################################################################################
 ######################## Main function, the workhorse:  ########################
 ################################################################################
-def DDMOU(settings, int perLoc, tempResultDir, saveResultDir):
+def DDMOU(settings, int perLoc, tempResultDir, quickName, totalUUID):
 
 	# Import necessary python packages:
 	import itertools, pickle, random, uuid, os
+	from scipy import zeros
 	
 	# C initializations
 	cdef float xCurr, tCurr, yCurr, xMean, xStd, xTau, dt, theta, crossTimes, results
@@ -32,22 +33,22 @@ def DDMOU(settings, int perLoc, tempResultDir, saveResultDir):
 	params = settings.keys()
 	params.sort()
 	settingsList = []
-	for parameter in params: settingsList.append(settings[parameter])
+	totalLength = 1
+	for parameter in params: 
+		settingsList.append(settings[parameter])
+		totalLength *= len(settings[parameter])
 	settingsIterator = itertools.product(*settingsList)
-
-	# Create unique job ID's and output file handle, and write out settings:
-	myUUID = uuid.uuid1()
-	fOut = open(os.getcwd() + tempResultDir + '/' + str(myUUID) + '_temp.dat','w')
-	fOutSet = open(os.getcwd() + saveResultDir + '/' + str(myUUID) + '.settings','w')	
-	fOutSet.write(pickle.dumps((settings,settingsList,perLoc)))
-	fOutSet.close()
+	resultsArray = zeros(totalLength, dtype=float)
+	crossTimesArray = zeros(totalLength, dtype=float)
 
 	# Initialization of random number generator:
+	myUUID = uuid.uuid4()
 	random.seed(myUUID.int)
 	for i in range(624): mySeed[i] = random.randint(0,2**30)
 	myTwister.seed(mySeed)
 
 	# Parameter space loop:
+	counter = 0
 	for currentSettings in settingsIterator:
 		dt, theta, xMean, xStd, xTau =  currentSettings
 
@@ -59,14 +60,17 @@ def DDMOU(settings, int perLoc, tempResultDir, saveResultDir):
 			yCurr = 0
 			while abs(yCurr) < theta:
 				xCurr = xCurr+dt*(xMean - xCurr)/xTau + xStd*sqrt(2*dt/xTau)*myTwister.randNorm(mean,std)
-				yCurr = yCurr + dt*xCurr
+				yCurr = yCurr + .005*dt*xCurr
 				tCurr=tCurr+dt
 			crossTimes += tCurr
 			if yCurr > theta:
 				results += 1
+		resultsArray[counter] = results
+		crossTimesArray[counter] = crossTimes
+		counter += 1
 
-		# Output results
-		fOut.write(str('%15.3f %15.3f\n' % (results, crossTimes)))
-	
+	# Create output files:
+	fOut = open(os.getcwd() + tempResultDir + '/' + quickName + '_' + str(totalUUID) + '_' + str(myUUID) + '_temp.dat','w')
+	pickle.dump((crossTimesArray, resultsArray),fOut)
 	fOut.close()
 	return
