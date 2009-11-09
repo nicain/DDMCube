@@ -24,19 +24,25 @@ from subprocess import Popen, PIPE
 
 # Define job settings:
 settings={									# Example values:
+'A':list(scipy.linspace(0,0,1)),			# 0
+'B':list(scipy.linspace(0,0,1)),			# 0
+'beta':list(scipy.linspace(0,0,1)),			# 0
+'chop':list(scipy.linspace(0,10,1)),		# 0
+'dt':list(scipy.linspace(.02,1,1)),			# .02
+'K':list(scipy.linspace(.05,.05,1)),		# .05
+'theta':list(scipy.linspace(1,20,10)),		# 10
 'xMean':list(scipy.linspace(3,.55,1)),		# 3
 'xStd':list(scipy.linspace(12.8,1,1)),		# 12.8
 'xTau':list(scipy.linspace(20,1,1)),		# 20
-'theta':list(scipy.linspace(.5,20,10)),		# 10
-'dt':list(scipy.linspace(.02,1,1)),			# .02
-'chop':list(scipy.linspace(0,10,2))			# 0
+'yBegin':list(scipy.linspace(40,40,1)),		# 40
+'yTau':list(scipy.linspace(10,10,1))		# 0
 }
 
 # Define job parameters:
-quickName = 'firstChop'
-numberOfJobs = 5000
+quickName = 'fullThetaSweep'
+numberOfJobs = 500
 verbose = 1
-multiProc = 1
+multiProc = 0
 
 # Set up saving directories
 tempResultDir = '/simResults'

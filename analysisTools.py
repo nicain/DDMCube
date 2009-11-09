@@ -3,40 +3,39 @@
 #  Copyright (c) 2009 __MyCompanyName__. All rights reserved.
 
 ################################################################################
-#def compileMultiResults(fileName, tempResultDir = 'simResults', saveResultDir = 'savedResults'):
-
-################################################################################
 # This function plots a 1-D slice:
 def plot1D( sliceDict, quickName, whatToPlot,saveResultDir = 'savedResults', whichRun = 0, tDel = 2000, tPen = 2000, tND = 300):
 	from pylab import plot
-	from numpy import transpose, shape
+	from numpy import transpose, shape, squeeze
+	import analysisTools
+
+	# Get data:
 	crossTimeData, resultData, dims, settings, numberOfJobs, gitVersion =  getDataAndSettings(quickName, saveResultDir, whichRun)
 	crossTimeData += tND 
-	permuteList = range(len(dims))
+	
+	# Record variable to plot, and then strip input dictionary of that variable:
 	xDimension = sliceDict['XVar']
 	del sliceDict['XVar']
-	for parameter in dims:
-		if not(parameter == xDimension or parameter in sliceDict):
-			sliceDict[parameter] = settings[parameter][0]
-	sliceDims = dims[:]
-	sliceDims.remove(xDimension)
-	indexList = [slice(None,None)]
-	for parameter in sliceDims:
-		parameterSweepList = settings[parameter]
-		val = parameterSweepList.index(sliceDict[parameter])
-		indexList.append(parameterSweepList.index(sliceDict[parameter]))
-	coord = tuple(indexList)
-
+	
+	# Reorder dimension list and cube to put plotting variable first:
+	permuteList = range(len(dims))
 	whereIsXDim = dims.index(xDimension)
-	permuteList.remove(whereIsXDim)
-	permuteList.insert(0,whereIsXDim)
+	dims[0], dims[whereIsXDim] = dims[whereIsXDim], dims[0]
+	permuteList[0], permuteList[whereIsXDim] = permuteList[whereIsXDim], permuteList[0]
 	crossTimeData = transpose(crossTimeData,permuteList)
 	resultData = transpose(resultData,permuteList)
-	crossTimeSlice = crossTimeData[coord]
-	resultSlice = resultData[coord]
 	
+	# Collapse all non-constant dimensions:
+	crossDims = dims[:]
+	resultDims = dims[:]
+	for collapseDim in iter(sliceDict):
+		crossTimeData, crossDims = analysisTools.reduce1D(crossTimeData, crossDims, collapseDim, settings[collapseDim], sliceDict[collapseDim])
+		resultData, resultDims = analysisTools.reduce1D(resultData, resultDims, collapseDim, settings[collapseDim], sliceDict[collapseDim])
+	crossTimeSlice = squeeze(crossTimeData)
+	resultSlice = squeeze(resultData) 
+	
+	# Create x-axis values, and plot:
 	xVals = settings[xDimension]
-	
 	if whatToPlot == 'RR':
 		depVar = resultSlice/(crossTimeSlice + tND + tDel + (1-resultSlice)*tPen)
 	elif whatToPlot == 'RT':
@@ -44,9 +43,27 @@ def plot1D( sliceDict, quickName, whatToPlot,saveResultDir = 'savedResults', whi
 	elif whatToPlot == 'FC':
 		depVar = resultSlice
 	else: print ' Unrecognized plot option ' + whatToPlot
-	
 	plot(xVals,depVar)
 	return
+	
+################################################################################
+# This function reduces the dimension of a cube by 1, along a given slice:
+def reduce1D(cube, dims, varToReduce, vals, sliceVal):
+	for i in range(len(vals)-1):
+		if vals[i] <= sliceVal and sliceVal < vals[i+1]:
+			lInd=i
+			rInd=i+1
+			break
+	indexListL = [slice(None,None)]*len(dims)
+	indexListR = indexListL[:]
+	indToSet = dims.index(varToReduce)
+	indexListL[indToSet] = lInd
+	indexListR[indToSet] = rInd
+	cubeL = cube[tuple(indexListL)]
+	cubeR = cube[tuple(indexListR)]
+	cubeReduce = (cubeL*float(vals[rInd] - sliceVal) + cubeR*float(sliceVal - vals[lInd]))/float(vals[rInd] - vals[lInd])
+	dims.remove(varToReduce)
+	return (cubeReduce, dims)
 
 ################################################################################
 # This function lists the job names that are available:
@@ -88,11 +105,11 @@ def getSettingsString(quickName, saveResultDir = 'savedResults', whichRun = 0):
 	totalLength = 1
 	for parameter in constParams:
 		thisSetting = settings[parameter]
-		settingsString += '   %5s: %5.2f\n' % (parameter, min(thisSetting))
+		settingsString += '   %6s: %5.2f\n' % (parameter, min(thisSetting))
 		totalLength *= len(thisSetting)
 	for parameter in varParams:
 		thisSetting = settings[parameter]
-		settingsString += '   %5s: %5.2f %5.2f %3d\n' % (parameter,min(thisSetting),max(thisSetting),len(thisSetting))
+		settingsString += '   %6s: %5.2f %5.2f %3d\n' % (parameter,min(thisSetting),max(thisSetting),len(thisSetting))
 		totalLength *= len(thisSetting)
 		
 	settingsString += ' Number of Parameter Space Points: %-5d\n' % totalLength
