@@ -39,8 +39,8 @@ settings={									# Example values:
 }
 
 # Define job parameters:
-quickName = 'fullThetaSweep'
-numberOfJobs = 500
+quickName = 'temp'
+numberOfJobs = 50
 verbose = 1
 multiProc = 0
 
@@ -54,7 +54,7 @@ saveResultDir = '/savedResults'
 
 # Write a "settings" file:
 myUUID = uuid.uuid4()
-output = Popen(['git','tag'],stdout=PIPE).communicate()
+output = Popen(['git tag | tail -n 1'],stdout=PIPE, shell=True).communicate()
 gitVersion = output[0][:-1]
 totalLength = 1
 for parameter in settings: 
