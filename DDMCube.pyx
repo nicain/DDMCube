@@ -23,7 +23,7 @@ def DDMOU(settings, int perLoc, tempResultDir, quickName, totalUUID):
 	from scipy import zeros
 	
 	# C initializations
-	cdef float xCurr, tCurr, yCurr, xMean, xStd, xTau, 
+	cdef float xCurr, tCurr, yCurrP, yCurrN, xMean, xStd, xTau, 
 	cdef float dt, theta, crossTimes, results, chop, beta, K, yTau, A, B, yBegin
 	cdef double mean = 0, std = 1
 	cdef unsigned long mySeed[624]
@@ -57,16 +57,21 @@ def DDMOU(settings, int perLoc, tempResultDir, quickName, totalUUID):
 		for i in range(perLoc):
 			tCurr = 0
 			xCurr = myTwister.randNorm(xMean,xStd)
-			yCurr = yBegin
-			while abs(yCurr - yBegin) < theta:
+			yCurrP = yBegin
+			yCurrN = yBegin
+			while yCurrP - yBegin < theta and yCurrN - yBegin < theta:
 				xCurr = xCurr+dt*(xMean - xCurr)/xTau + xStd*sqrt(2*dt/xTau)*myTwister.randNorm(mean,std)
-				if abs(xCurr + beta*yCurr/K + B) < chop:
-					yCurr = yCurr
+				if abs(xCurr + beta*yCurrP/K + B) < chop:
+					yCurrP = yCurrP
 				else:
-					yCurr = yCurr + dt/yTau*(K*xCurr + beta*yCurr + A)
+					yCurrP = yCurrP + dt/yTau*(K*xCurr + beta*yCurrP + A)
+				if abs(xCurr + beta*yCurrN/K + B) < chop:
+					yCurrN = yCurrN
+				else:
+					yCurrN = yCurrN + dt/yTau*(-K*xCurr + beta*yCurrN + A)
 				tCurr=tCurr+dt
 			crossTimes += tCurr
-			if yCurr - yBegin > theta:
+			if yCurrP >= theta:
 				results += 1
 		resultsArray[counter] = results
 		crossTimesArray[counter] = crossTimes

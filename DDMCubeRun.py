@@ -26,12 +26,12 @@ from subprocess import Popen, PIPE
 settings={									# Example values:
 'A':list(scipy.linspace(0,0,1)),			# 0
 'B':list(scipy.linspace(0,0,1)),			# 0
-'beta':list(scipy.linspace(0,.2,10)),		# 0
-'chop':list(scipy.linspace(0,10,10)),		# 0
+'beta':list(scipy.linspace(0,.1,5)),		# 0
+'chop':list(scipy.linspace(0,10,1)),		# 0
 'dt':list(scipy.linspace(.02,.1,1)),		# .02
 'K':list(scipy.linspace(.05,.05,1)),		# .05
-'theta':list(scipy.linspace(10,20,1)),		# 10
-'xMean':list(scipy.linspace(3,6,1)),		# 3 = 5%C
+'theta':list(scipy.linspace(1,10,5)),		# 10
+'xMean':list(scipy.linspace(0,6,1)),		# 3 = 5%C
 'xStd':list(scipy.linspace(12.8,1,1)),		# 12.8
 'xTau':list(scipy.linspace(20,1,1)),		# 20
 'yBegin':list(scipy.linspace(40,40,1)),		# 40
