@@ -4,7 +4,7 @@
 
 ################################################################################
 # This function plots a sequence  of 1-D multi plots:
-def plot1DSeqMultiline(sliceDict, whatToPlot, saveResultDir = 'savedResults', whichRun = 0, tDel = 2000, tPen = 2000, tND = 300, newFigure = 1, quickName = -1, seqLength = 4):
+def plot1DSeqMultiLine(sliceDict, whatToPlot, saveResultDir = 'savedResults', whichRun = 0, tDel = 2000, tPen = 2000, tND = 300, newFigure = 1, quickName = -1, seqLength = 4, N=5):
 	from numpy import array, linspace, inf
 	from pylab import figure, subplot, suptitle, subplots_adjust
 	import copy
@@ -14,12 +14,12 @@ def plot1DSeqMultiline(sliceDict, whatToPlot, saveResultDir = 'savedResults', wh
 	seqDimensionTuple = sliceDict['SeqVar']
 	if isinstance(seqDimensionTuple, str):
 		seqDimension = seqDimensionTuple
-		settings, FD, numberOfJobs, gitVersion =  getSettings(quickName, saveResultDir, whichRun)
+		settings, FD, numberOfJobs, gitVersion =  getSettings(quickName, saveResultDir, whichRun = whichRun)
 		vals = settings[seqDimension]
 		seqDimensionList = linspace(min(vals), max(vals), seqLength)
 	else:
 		seqDimension = seqDimensionTuple[0]
-		seqDimensionList = seqDimensionTuple[0]
+		seqDimensionList = seqDimensionTuple[1]
 
 	del sliceDict['SeqVar']
 	if newFigure:
@@ -30,7 +30,7 @@ def plot1DSeqMultiline(sliceDict, whatToPlot, saveResultDir = 'savedResults', wh
 		subplot(1,len(seqDimensionList),i+1)
 		sliceDict[seqDimension] = seqDimensionList[i]
 		titleString = seqDimension + '=' + '%-5.3f' % seqDimensionList[i]
-		yLimsBack = plot1DMultiLine(copy.copy(sliceDict), whatToPlot,saveResultDir = saveResultDir, whichRun = whichRun, tDel = tDel, tPen = tPen, tND = tND, quickName = quickName, titleString = titleString, newFigure = 0, plotYLabel = 0, yLims = -1, colorBar = 0)
+		yLimsBack = plot1DMultiLine(copy.copy(sliceDict), whatToPlot,saveResultDir = saveResultDir, whichRun = whichRun, tDel = tDel, tPen = tPen, tND = tND, quickName = quickName, titleString = titleString, seqLength = N, newFigure = 0, plotYLabel = 0, yLims = -1, colorBar = 0)
 		if yLimsBack[0] < minY:
 			minY = yLimsBack[0]
 		if yLimsBack[1] > maxY:
@@ -43,11 +43,11 @@ def plot1DSeqMultiline(sliceDict, whatToPlot, saveResultDir = 'savedResults', wh
 		sliceDict[seqDimension] = seqDimensionList[i]
 		titleString = seqDimension + '=' + '%-5.3f' % seqDimensionList[i]
 		if i==0:
-			thisPlot = plot1DMultiLine(copy.copy(sliceDict), whatToPlot,saveResultDir = saveResultDir, whichRun = whichRun, tDel = tDel, tPen = tPen, tND = tND, quickName = quickName, titleString = titleString, yLims = yLims, newFigure = 0, plotYLabel = 1, colorBar = 0)
+			thisPlot = plot1DMultiLine(copy.copy(sliceDict), whatToPlot,saveResultDir = saveResultDir, whichRun = whichRun, tDel = tDel, tPen = tPen, tND = tND, quickName = quickName, titleString = titleString, yLims = yLims, seqLength = N, newFigure = 0, plotYLabel = 1, colorBar = 0)
 		elif i == len(seqDimensionList) - 1:
-			thisPlot = plot1DMultiLine(copy.copy(sliceDict), whatToPlot,saveResultDir = saveResultDir, whichRun = whichRun, tDel = tDel, tPen = tPen, tND = tND, quickName = quickName, titleString = titleString, yLims = yLims, newFigure = 0, plotYLabel = 0, colorBar = 1)	
+			thisPlot = plot1DMultiLine(copy.copy(sliceDict), whatToPlot,saveResultDir = saveResultDir, whichRun = whichRun, tDel = tDel, tPen = tPen, tND = tND, quickName = quickName, titleString = titleString, yLims = yLims, seqLength = N, newFigure = 0, plotYLabel = 0, colorBar = 1)	
 		else:
-			thisPlot = plot1DMultiLine(copy.copy(sliceDict), whatToPlot,saveResultDir = saveResultDir, whichRun = whichRun, tDel = tDel, tPen = tPen, tND = tND, quickName = quickName, titleString = titleString, yLims = yLims, newFigure = 0, plotYLabel = 0, colorBar = 0)	
+			thisPlot = plot1DMultiLine(copy.copy(sliceDict), whatToPlot,saveResultDir = saveResultDir, whichRun = whichRun, tDel = tDel, tPen = tPen, tND = tND, quickName = quickName, titleString = titleString, yLims = yLims, seqLength = N, newFigure = 0, plotYLabel = 0, colorBar = 0)	
 	
 	if whatToPlot == 'RR':
 		suptitle('Reward Rate')
@@ -62,7 +62,7 @@ def plot1DSeqMultiline(sliceDict, whatToPlot, saveResultDir = 'savedResults', wh
 
 ################################################################################
 # This function plots creates a multiline plot:
-def plot1DMultiLine(sliceDict, whatToPlot, saveResultDir = 'savedResults', whichRun = 0, tDel = 2000, tPen = 2000, tND = 300, newFigure = 1, quickName = -1, seqLength = 5, colorBar = 1, titleString = -1, yLims = -1, plotYLabel = 1, color = []):
+def plot1DMultiLine(sliceDict, whatToPlot, saveResultDir = 'savedResults', whichRun = 0, tDel = 2000, tPen = 2000, tND = 300, newFigure = 1, quickName = -1, N = 5, colorBar = 1, titleString = -1, yLims = -1, plotYLabel = 1, color = []):
 	from numpy import array, linspace, inf
 	from pylab import figure, subplots_adjust, cm, flipud, pcolor, colorbar, hold
 	import copy
@@ -72,15 +72,16 @@ def plot1DMultiLine(sliceDict, whatToPlot, saveResultDir = 'savedResults', which
 	seqDimensionTuple = sliceDict['MultiLineVar']
 	if isinstance(seqDimensionTuple, str):
 		seqDimension = seqDimensionTuple
-		settings, FD, numberOfJobs, gitVersion =  getSettings(quickName, saveResultDir, whichRun)
+		settings, FD, numberOfJobs, gitVersion =  getSettings(quickName, saveResultDir, whichRun=whichRun)
 		vals = settings[seqDimension]
-		seqDimensionList = linspace(min(vals), max(vals), seqLength)
+		seqDimensionList = linspace(min(vals), max(vals), N)
 	else:
 		seqDimension = seqDimensionTuple[0]
-		seqDimensionList = seqDimensionTuple[0]
+		seqDimensionList = seqDimensionTuple[1]
 		
 	if color == []:
-		colorMatrix=cm.autumn_r(linspace(0,1,seqLength))
+		seqDimensionListArray = array(seqDimensionList, dtype=float)
+		colorMatrix=cm.autumn_r((seqDimensionListArray-min(seqDimensionListArray))/(max(seqDimensionListArray)-min(seqDimensionListArray)))
 	if colorBar: pcolor(array([[min(seqDimensionList),max(seqDimensionList)]]),cmap=cm.autumn_r,visible=False)
 
 	del sliceDict['MultiLineVar']
@@ -123,12 +124,12 @@ def plot1DSeq(sliceDict, whatToPlot, saveResultDir = 'savedResults', whichRun = 
 	seqDimensionTuple = sliceDict['SeqVar']
 	if isinstance(seqDimensionTuple, str):
 		seqDimension = seqDimensionTuple
-		settings, FD, numberOfJobs, gitVersion =  getSettings(quickName, saveResultDir, whichRun)
+		settings, FD, numberOfJobs, gitVersion =  getSettings(quickName, saveResultDir, whichRun=whichRun)
 		vals = settings[seqDimension]
 		seqDimensionList = linspace(min(vals), max(vals), seqLength)
 	else:
 		seqDimension = seqDimensionTuple[0]
-		seqDimensionList = seqDimensionTuple[0]
+		seqDimensionList = seqDimensionTuple[1]
 
 	del sliceDict['SeqVar']
 	if newFigure:
@@ -182,11 +183,11 @@ def plot2DSeq(sliceDict, whatToPlot, saveResultDir = 'savedResults', whichRun = 
 	seqDimensionTuple = sliceDict['SeqVar']
 	if isinstance(seqDimensionTuple, str):
 		seqDimension = seqDimensionTuple
-		settings, FD, numberOfJobs, gitVersion =  getSettings(quickName, saveResultDir, whichRun)
+		settings, FD, numberOfJobs, gitVersion =  getSettings(quickName, saveResultDir, whichRun=whichRun)
 		vals = settings[seqDimension]
 		seqDimensionList = linspace(min(vals), max(vals), seqLength)
 	else:
-		seqDimension = seqDimensionTuple[0]
+		seqDimension = seqDimensionTuple[1]
 		seqDimensionList = seqDimensionTuple[0]
 
 	del sliceDict['SeqVar']
@@ -410,7 +411,7 @@ def printSettings(quickName = -1, saveResultDir = 'savedResults', whichRun = 0):
 	if quickName == -1:
 		quickName = getLastQuickName(saveResultDir = 'savedResults')
 
-	printString = getSettingsString(quickName, saveResultDir = 'savedResults', whichRun = 0)
+	printString = getSettingsString(quickName, saveResultDir = 'savedResults', whichRun = whichRun)
 	print printString
 	return
 
@@ -420,7 +421,7 @@ def getSettingsString(quickName = -1, saveResultDir = 'savedResults', whichRun =
 	if quickName == -1:
 		quickName = getLastQuickName(saveResultDir = 'savedResults')
 
-	settings, FD, numberOfJobs, gitVersion = getSettings(quickName, saveResultDir, whichRun)
+	settings, FD, numberOfJobs, gitVersion = getSettings(quickName, saveResultDir, whichRun=whichRun)
 	params = settings.keys()
 	constParams = []
 	varParams = []
@@ -438,11 +439,11 @@ def getSettingsString(quickName = -1, saveResultDir = 'savedResults', whichRun =
 	totalLength = 1
 	for parameter in constParams:
 		thisSetting = settings[parameter]
-		settingsString += '   %6s: %5.2f\n' % (parameter, min(thisSetting))
+		settingsString += '   %6s: %10.2f\n' % (parameter, min(thisSetting))
 		totalLength *= len(thisSetting)
 	for parameter in varParams:
 		thisSetting = settings[parameter]
-		settingsString += '   %6s: %5.2f %5.2f %3d\n' % (parameter,min(thisSetting),max(thisSetting),len(thisSetting))
+		settingsString += '   %6s: %10.2f %5.2f %3d\n' % (parameter,min(thisSetting),max(thisSetting),len(thisSetting))
 		totalLength *= len(thisSetting)
 
 	settingsString += ' Drift-Diffusion Software version:  %-5s\n' % gitVersion		
@@ -469,7 +470,7 @@ def getData(quickName = -1, saveResultDir = 'savedResults', whichRun = 0):
 	if quickName == -1:
 		quickName = getLastQuickName(saveResultDir = 'savedResults')
 	
-	ID = quickNameToID(quickName, saveResultDir, whichRun)
+	ID = quickNameToID(quickName, saveResultDir, whichRun=whichRun)
 	fileName = getFileString(ID,'dat', saveResultDir)
 	fIn = open('./' + saveResultDir + '/' + fileName,'r')
 	resultTuple = pickle.load(fIn)
@@ -482,7 +483,7 @@ def getSettings(quickName = -1, saveResultDir = 'savedResults', whichRun = 0):
 	if quickName == -1:
 		quickName = getLastQuickName(saveResultDir = 'savedResults')
 		
-	ID = quickNameToID(quickName, saveResultDir, whichRun)
+	ID = quickNameToID(quickName, saveResultDir, whichRun = whichRun)
 	fileName = getFileString(ID,'settings', saveResultDir)
 	fIn = open('./' + saveResultDir + '/' + fileName,'r')
 	resultTuple = pickle.load(fIn)
@@ -495,7 +496,7 @@ def getDataAndSettings(quickName = -1, saveResultDir = 'savedResults', whichRun 
 		quickName = getLastQuickName(saveResultDir = 'savedResults')
 	
 	crossTimeData, resultData, dims = getData(quickName, saveResultDir, whichRun)
-	settings, FD, numberOfJobs, gitVersion = getSettings(quickName, saveResultDir, whichRun)
+	settings, FD, numberOfJobs, gitVersion = getSettings(quickName, saveResultDir, whichRun=whichRun)
 	return (crossTimeData, resultData, dims, settings, FD, numberOfJobs, gitVersion)
 	
 ################################################################################
@@ -542,23 +543,20 @@ def quickNameIDDictionary(saveResultDir = 'savedResults',includeRepeats = 0):
 
 ################################################################################
 # This function grabs the ID for a given quickName:
-def quickNameToID(quickName = -1, saveResultDir = 'savedResults', includeRepeats = 0):
+def quickNameToID(quickName = -1, saveResultDir = 'savedResults', whichRun = 0):
 	import operator
 	if quickName == -1:
 		quickName = getLastQuickName(saveResultDir = 'savedResults')
 
-	currentDict = quickNameIDDictionary(saveResultDir, includeRepeats)
+	currentDict = quickNameIDDictionary(saveResultDir, includeRepeats = 1)
 	try: listOfIDTimeTuple = currentDict[quickName]
 	except KeyError: 
 		print '  Job "' + quickName + '" not found.'
 		print '  Available jobs:'
 		for i in currentDict.keys(): print '    ' + i
 		raise
-	if not(includeRepeats):
-		listOfID = map(operator.itemgetter(0), listOfIDTimeTuple)
-		return listOfID[0]
-	else:
-		return listOfIDTimeTuple
+	listOfID = map(operator.itemgetter(0), listOfIDTimeTuple)
+	return listOfID[whichRun]
 		
 ################################################################################
 # This function gets the most recent quickname:

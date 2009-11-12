@@ -28,12 +28,12 @@ settings={									# Example values:
 'A':list(scipy.linspace(0,0,1)),			# 0
 'B':list(scipy.linspace(0,0,1)),			# 0
 'beta':list(scipy.linspace(0,.1,1)),		# 0
-'chop':list(scipy.linspace(0,10,10)),		# 0
-'dt':list(scipy.linspace(.02,.1,2)),		# .02
+'chop':list(scipy.linspace(0,5,1)),		# 0
+'dt':list(scipy.linspace(.02,20,1)),		# .02
 'K':list(scipy.linspace(.05,.05,1)),		# .05
-'tMax':list(scipy.linspace(100000,600,1)),		# 10000, or 400->600 in FD paradigm
-'theta':list(scipy.linspace(5,15,10)),		# 10
-'xMean':list(scipy.linspace(3,6,1)),		# 3 = 5%C
+'tMax':list(scipy.linspace(100000,600,1)),	# 10000, or 400->600 in FD paradigm
+'theta':list(scipy.linspace(5,15,5)),		# 10
+'xMean':list(scipy.linspace(0,6,3)),		# 3 = 5%C
 'xStd':list(scipy.linspace(12.8,1,1)),		# 12.8
 'xTau':list(scipy.linspace(20,1,1)),		# 20
 'yBegin':list(scipy.linspace(40,40,1)),		# 40
@@ -41,9 +41,9 @@ settings={									# Example values:
 }
 
 # Define job parameters:
-quickName = 'multiLineSeq'
+quickName = 'dtAnalysis'
 FD=0
-numberOfJobs = 500
+numberOfJobs = 50
 verbose = 1
 multiProc = True
 
