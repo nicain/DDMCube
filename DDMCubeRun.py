@@ -1,7 +1,8 @@
 #  DDMCubeRun.py
 #  Created by nicain on 11/1/09.
 #  Copyright (c) 2009 __MyCompanyName__. All rights reserved.
-#  Run from command line: python DDMCubeRun.py build_ext --inplace
+#  Run from command line: 
+#			python DDMCubeRun.py build_ext --inplace
 
 # Compile DDMCube.pyx package
 from distutils.core import setup
@@ -26,12 +27,13 @@ from subprocess import Popen, PIPE
 settings={									# Example values:
 'A':list(scipy.linspace(0,0,1)),			# 0
 'B':list(scipy.linspace(0,0,1)),			# 0
-'beta':list(scipy.linspace(0,.1,5)),		# 0
-'chop':list(scipy.linspace(0,10,1)),		# 0
-'dt':list(scipy.linspace(.02,.1,1)),		# .02
+'beta':list(scipy.linspace(0,.1,1)),		# 0
+'chop':list(scipy.linspace(0,10,10)),		# 0
+'dt':list(scipy.linspace(.02,.1,2)),		# .02
 'K':list(scipy.linspace(.05,.05,1)),		# .05
-'theta':list(scipy.linspace(1,10,5)),		# 10
-'xMean':list(scipy.linspace(0,6,1)),		# 3 = 5%C
+'tMax':list(scipy.linspace(100000,600,1)),		# 10000, or 400->600 in FD paradigm
+'theta':list(scipy.linspace(5,15,10)),		# 10
+'xMean':list(scipy.linspace(3,6,1)),		# 3 = 5%C
 'xStd':list(scipy.linspace(12.8,1,1)),		# 12.8
 'xTau':list(scipy.linspace(20,1,1)),		# 20
 'yBegin':list(scipy.linspace(40,40,1)),		# 40
@@ -39,8 +41,9 @@ settings={									# Example values:
 }
 
 # Define job parameters:
-quickName = 'effectOfBeta'
-numberOfJobs = 5000
+quickName = 'multiLineSeq'
+FD=0
+numberOfJobs = 500
 verbose = 1
 multiProc = True
 
@@ -61,7 +64,7 @@ for parameter in settings:
 	thisSetting = settings[parameter]
 	totalLength *= len(thisSetting)
 fOutSet = open(os.getcwd() + saveResultDir + '/' + quickName + '_' + str(myUUID) + '.settings','w')	
-pickle.dump((settings, numberOfJobs, gitVersion),fOutSet)
+pickle.dump((settings, FD, numberOfJobs, gitVersion),fOutSet)
 fOutSet.close()
 
 # Display settings:
@@ -69,9 +72,9 @@ analysisTools.printSettings(quickName, saveResultDir)
 
 # Run the job:
 if multiProc:
-	def DDMOU_help(settings, perLoc, tempResultDir, quickName, totalUUID, procNum):
+	def DDMOU_help(settings, FD, perLoc, tempResultDir, quickName, totalUUID, procNum):
 		try:
-		 	DDMCube.DDMOU(settings, perLoc, tempResultDir, quickName, totalUUID)
+		 	DDMCube.DDMOU(settings, FD, perLoc, tempResultDir, quickName, totalUUID)
 			return '   Sub-simulation ' + str(procNum) + ' Complete'
 		except: sys.exit(-1)
 		
@@ -79,14 +82,14 @@ if multiProc:
 	job_server = pp.Server(ppservers=())
 	print ' Starting pp with', job_server.get_ncpus(), 'workers'
 	tBegin = time.mktime(time.localtime())
-	job1 = job_server.submit(DDMOU_help, (settings, math.floor(numberOfJobs/2), tempResultDir, quickName, myUUID, 1,), (), ("DDMCube",))
-	job2 = job_server.submit(DDMOU_help, (settings, numberOfJobs - math.floor(numberOfJobs/2), tempResultDir, quickName, myUUID, 2,), (), ("DDMCube",))
+	job1 = job_server.submit(DDMOU_help, (settings, FD, math.floor(numberOfJobs/2), tempResultDir, quickName, myUUID, 1,), (), ("DDMCube",))
+	job2 = job_server.submit(DDMOU_help, (settings, FD, numberOfJobs - math.floor(numberOfJobs/2), tempResultDir, quickName, myUUID, 2,), (), ("DDMCube",))
 	print job1()
 	print job2()
 	tEnd = time.mktime(time.localtime())
 else:
 	tBegin = time.mktime(time.localtime())
-	DDMCube.DDMOU(settings, numberOfJobs, tempResultDir, quickName, myUUID)
+	DDMCube.DDMOU(settings, FD, numberOfJobs, tempResultDir, quickName, myUUID)
 	tEnd = time.mktime(time.localtime())
 
 # Collect results:

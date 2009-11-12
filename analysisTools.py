@@ -3,34 +3,202 @@
 #  Copyright (c) 2009 __MyCompanyName__. All rights reserved.
 
 ################################################################################
-# This function plots a sequence  of 2-D slices:
-def plot2DSeq(sliceDict, whatToPlot, saveResultDir = 'savedResults', whichRun = 0, tDel = 2000, tPen = 2000, tND = 300, newFigure = 1, colorArray = [], N = 20, quickName = -1, seqLength = 4,  colorBar = 1):
+# This function plots a sequence  of 1-D multi plots:
+def plot1DSeqMultiline(sliceDict, whatToPlot, saveResultDir = 'savedResults', whichRun = 0, tDel = 2000, tPen = 2000, tND = 300, newFigure = 1, quickName = -1, seqLength = 4):
 	from numpy import array, linspace, inf
-	from pylab import figure, subplot, colorbar, suptitle
+	from pylab import figure, subplot, suptitle, subplots_adjust
 	import copy
 	if quickName == -1:
 		quickName = getLastQuickName(saveResultDir = 'savedResults')
 
-	zDimensionTuple = sliceDict['ZVar']
-	if isinstance(zDimensionTuple, str):
-		zDimension = zDimensionTuple
-		settings, numberOfJobs, gitVersion =  getSettings(quickName, saveResultDir, whichRun)
-		vals = settings[zDimension]
-		zDimensionList = linspace(min(vals), max(vals), seqLength)
+	seqDimensionTuple = sliceDict['SeqVar']
+	if isinstance(seqDimensionTuple, str):
+		seqDimension = seqDimensionTuple
+		settings, FD, numberOfJobs, gitVersion =  getSettings(quickName, saveResultDir, whichRun)
+		vals = settings[seqDimension]
+		seqDimensionList = linspace(min(vals), max(vals), seqLength)
 	else:
-		zDimension = zDimensionTuple[0]
-		zDimensionList = zDimensionTuple[0]
+		seqDimension = seqDimensionTuple[0]
+		seqDimensionList = seqDimensionTuple[0]
 
-	del sliceDict['ZVar']
+	del sliceDict['SeqVar']
+	if newFigure:
+		figure(num=None,figsize=(4*seqLength, 4))
+	minY = inf
+	maxY = -inf
+	for i in range(len(seqDimensionList)):
+		subplot(1,len(seqDimensionList),i+1)
+		sliceDict[seqDimension] = seqDimensionList[i]
+		titleString = seqDimension + '=' + '%-5.3f' % seqDimensionList[i]
+		yLimsBack = plot1DMultiLine(copy.copy(sliceDict), whatToPlot,saveResultDir = saveResultDir, whichRun = whichRun, tDel = tDel, tPen = tPen, tND = tND, quickName = quickName, titleString = titleString, newFigure = 0, plotYLabel = 0, yLims = -1, colorBar = 0)
+		if yLimsBack[0] < minY:
+			minY = yLimsBack[0]
+		if yLimsBack[1] > maxY:
+			maxY = yLimsBack[1]
+			
+	yLims = (minY, maxY)
+			
+	for i in range(len(seqDimensionList)):
+		subplot(1,len(seqDimensionList),i+1)
+		sliceDict[seqDimension] = seqDimensionList[i]
+		titleString = seqDimension + '=' + '%-5.3f' % seqDimensionList[i]
+		if i==0:
+			thisPlot = plot1DMultiLine(copy.copy(sliceDict), whatToPlot,saveResultDir = saveResultDir, whichRun = whichRun, tDel = tDel, tPen = tPen, tND = tND, quickName = quickName, titleString = titleString, yLims = yLims, newFigure = 0, plotYLabel = 1, colorBar = 0)
+		elif i == len(seqDimensionList) - 1:
+			thisPlot = plot1DMultiLine(copy.copy(sliceDict), whatToPlot,saveResultDir = saveResultDir, whichRun = whichRun, tDel = tDel, tPen = tPen, tND = tND, quickName = quickName, titleString = titleString, yLims = yLims, newFigure = 0, plotYLabel = 0, colorBar = 1)	
+		else:
+			thisPlot = plot1DMultiLine(copy.copy(sliceDict), whatToPlot,saveResultDir = saveResultDir, whichRun = whichRun, tDel = tDel, tPen = tPen, tND = tND, quickName = quickName, titleString = titleString, yLims = yLims, newFigure = 0, plotYLabel = 0, colorBar = 0)	
+	
+	if whatToPlot == 'RR':
+		suptitle('Reward Rate')
+	elif whatToPlot == 'FC':
+		suptitle('Fraction Correct')	
+	elif whatToPlot == 'RT':
+		suptitle('Reaction Time')
+		
+	subplots_adjust(bottom=0.12, right=0.85, top=0.8,left=.065)
+		
+	return
+
+################################################################################
+# This function plots creates a multiline plot:
+def plot1DMultiLine(sliceDict, whatToPlot, saveResultDir = 'savedResults', whichRun = 0, tDel = 2000, tPen = 2000, tND = 300, newFigure = 1, quickName = -1, seqLength = 5, colorBar = 1, titleString = -1, yLims = -1, plotYLabel = 1, color = []):
+	from numpy import array, linspace, inf
+	from pylab import figure, subplots_adjust, cm, flipud, pcolor, colorbar, hold
+	import copy
+	if quickName == -1:
+		quickName = getLastQuickName(saveResultDir = 'savedResults')
+
+	seqDimensionTuple = sliceDict['MultiLineVar']
+	if isinstance(seqDimensionTuple, str):
+		seqDimension = seqDimensionTuple
+		settings, FD, numberOfJobs, gitVersion =  getSettings(quickName, saveResultDir, whichRun)
+		vals = settings[seqDimension]
+		seqDimensionList = linspace(min(vals), max(vals), seqLength)
+	else:
+		seqDimension = seqDimensionTuple[0]
+		seqDimensionList = seqDimensionTuple[0]
+		
+	if color == []:
+		colorMatrix=cm.autumn_r(linspace(0,1,seqLength))
+	if colorBar: pcolor(array([[min(seqDimensionList),max(seqDimensionList)]]),cmap=cm.autumn_r,visible=False)
+
+	del sliceDict['MultiLineVar']
+	if newFigure:
+		figure()
+	minY = inf
+	maxY = -inf
+	for i in range(len(seqDimensionList)):
+		sliceDict[seqDimension] = seqDimensionList[i]
+		thisPlot = plot1D(copy.copy(sliceDict), whatToPlot,saveResultDir = saveResultDir, whichRun = whichRun, tDel = tDel, tPen = tPen, tND = tND, quickName = quickName, titleString = -1, newFigure = 0, plotYLabel = plotYLabel, yLims = -1, color = colorMatrix[i])
+		if min(thisPlot[0].get_ydata()) < minY:
+			minY = min(thisPlot[0].get_ydata())
+		if max(thisPlot[0].get_ydata()) > maxY:
+			maxY = max(thisPlot[0].get_ydata())
+			
+	if yLims == -1:
+		yLims = (minY, maxY)
+			
+	for i in range(len(seqDimensionList)):
+		sliceDict[seqDimension] = seqDimensionList[i]
+		if titleString == -1:
+			titleString = ''
+		thisPlot = plot1D(copy.copy(sliceDict), whatToPlot,saveResultDir = saveResultDir, whichRun = whichRun, tDel = tDel, tPen = tPen, tND = tND, quickName = quickName, titleString = titleString, yLims = yLims, newFigure = 0, plotYLabel = plotYLabel, color = colorMatrix[i])	
+		
+	if colorBar: 
+		cb = colorbar()
+		cb.set_label('Color variable: ' + seqDimension)
+	
+	return yLims
+
+################################################################################
+# This function plots a sequence  of 1-D plots:
+def plot1DSeq(sliceDict, whatToPlot, saveResultDir = 'savedResults', whichRun = 0, tDel = 2000, tPen = 2000, tND = 300, newFigure = 1, quickName = -1, seqLength = 4):
+	from numpy import array, linspace, inf
+	from pylab import figure, subplot, suptitle, subplots_adjust
+	import copy
+	if quickName == -1:
+		quickName = getLastQuickName(saveResultDir = 'savedResults')
+
+	seqDimensionTuple = sliceDict['SeqVar']
+	if isinstance(seqDimensionTuple, str):
+		seqDimension = seqDimensionTuple
+		settings, FD, numberOfJobs, gitVersion =  getSettings(quickName, saveResultDir, whichRun)
+		vals = settings[seqDimension]
+		seqDimensionList = linspace(min(vals), max(vals), seqLength)
+	else:
+		seqDimension = seqDimensionTuple[0]
+		seqDimensionList = seqDimensionTuple[0]
+
+	del sliceDict['SeqVar']
+	if newFigure:
+		figure(num=None,figsize=(4*seqLength, 4))
+	minY = inf
+	maxY = -inf
+	for i in range(len(seqDimensionList)):
+		subplot(1,len(seqDimensionList),i+1)
+		sliceDict[seqDimension] = seqDimensionList[i]
+		titleString = seqDimension + '=' + '%-5.3f' % seqDimensionList[i]
+		if i==0:
+			thisPlot = plot1D(copy.copy(sliceDict), whatToPlot,saveResultDir = saveResultDir, whichRun = whichRun, tDel = tDel, tPen = tPen, tND = tND, quickName = quickName, titleString = titleString, newFigure = 0, plotYLabel = 1, yLims = -1)
+		else:
+			thisPlot = plot1D(copy.copy(sliceDict), whatToPlot,saveResultDir = saveResultDir, whichRun = whichRun, tDel = tDel, tPen = tPen, tND = tND, quickName = quickName, titleString = titleString, newFigure = 0, plotYLabel = 0, yLims = -1)	
+		if min(thisPlot[0].get_ydata()) < minY:
+			minY = min(thisPlot[0].get_ydata())
+		if max(thisPlot[0].get_ydata()) > maxY:
+			maxY = max(thisPlot[0].get_ydata())
+			
+	yLims = (minY, maxY)
+			
+	for i in range(len(seqDimensionList)):
+		subplot(1,len(seqDimensionList),i+1)
+		sliceDict[seqDimension] = seqDimensionList[i]
+		titleString = seqDimension + '=' + '%-5.3f' % seqDimensionList[i]
+		if i==0:
+			thisPlot = plot1D(copy.copy(sliceDict), whatToPlot,saveResultDir = saveResultDir, whichRun = whichRun, tDel = tDel, tPen = tPen, tND = tND, quickName = quickName, titleString = titleString, yLims = yLims, newFigure = 0, plotYLabel = 1)
+		else:
+			thisPlot = plot1D(copy.copy(sliceDict), whatToPlot,saveResultDir = saveResultDir, whichRun = whichRun, tDel = tDel, tPen = tPen, tND = tND, quickName = quickName, titleString = titleString, yLims = yLims, newFigure = 0, plotYLabel = 0)	
+	
+	if whatToPlot == 'RR':
+		suptitle('Reward Rate')
+	elif whatToPlot == 'FC':
+		suptitle('Fraction Correct')	
+	elif whatToPlot == 'RT':
+		suptitle('Reaction Time')
+		
+	subplots_adjust(bottom=0.12, right=0.97, top=0.8,left=.065)
+		
+	return
+
+################################################################################
+# This function plots a sequence  of 2-D slices:
+def plot2DSeq(sliceDict, whatToPlot, saveResultDir = 'savedResults', whichRun = 0, tDel = 2000, tPen = 2000, tND = 300, newFigure = 1, colorArray = [], N = 20, quickName = -1, seqLength = 4,  colorBar = 1):
+	from numpy import array, linspace, inf
+	from pylab import figure, subplot, colorbar, suptitle, subplots_adjust
+	import copy
+	if quickName == -1:
+		quickName = getLastQuickName(saveResultDir = 'savedResults')
+
+	seqDimensionTuple = sliceDict['SeqVar']
+	if isinstance(seqDimensionTuple, str):
+		seqDimension = seqDimensionTuple
+		settings, FD, numberOfJobs, gitVersion =  getSettings(quickName, saveResultDir, whichRun)
+		vals = settings[seqDimension]
+		seqDimensionList = linspace(min(vals), max(vals), seqLength)
+	else:
+		seqDimension = seqDimensionTuple[0]
+		seqDimensionList = seqDimensionTuple[0]
+
+	del sliceDict['SeqVar']
 	if newFigure:
 		figure(num=None,figsize=(4*seqLength, 4))
 	minZ = inf
 	maxZ = -inf
-	for i in range(len(zDimensionList)):
-		subplot(1,len(zDimensionList),i+1)
-		sliceDict[zDimension] = zDimensionList[i]
-		titleString = zDimension + '=' + '%-5.3f' % zDimensionList[i]
-		if i+1 == len(zDimensionList):
+	for i in range(len(seqDimensionList)):
+		subplot(1,len(seqDimensionList),i+1)
+		sliceDict[seqDimension] = seqDimensionList[i]
+		titleString = seqDimension + '=' + '%-5.3f' % seqDimensionList[i]
+		if i+1 == len(seqDimensionList):
 			thisPlot = plot2D(copy.copy(sliceDict), whatToPlot,saveResultDir = saveResultDir, whichRun = whichRun, tDel = tDel, tPen = tPen, tND = tND, N = N, quickName = quickName, titleString = titleString, colorBar = 0, newFigure = 0, plotYLabel = 0)
 		elif i==0:
 			thisPlot = plot2D(copy.copy(sliceDict), whatToPlot,saveResultDir = saveResultDir, whichRun = whichRun, tDel = tDel, tPen = tPen, tND = tND, N = N, quickName = quickName, titleString = titleString, colorBar = 0, newFigure = 0, plotYLabel = 0)
@@ -43,11 +211,11 @@ def plot2DSeq(sliceDict, whatToPlot, saveResultDir = 'savedResults', whichRun = 
 	
 	colorArray = linspace(minZ, maxZ, N)
 			
-	for i in range(len(zDimensionList)):
-		subplot(1,len(zDimensionList),i+1)
-		sliceDict[zDimension] = zDimensionList[i]
-		titleString = zDimension + '=' + '%-5.3f' % zDimensionList[i]
-		if i+1 == len(zDimensionList):
+	for i in range(len(seqDimensionList)):
+		subplot(1,len(seqDimensionList),i+1)
+		sliceDict[seqDimension] = seqDimensionList[i]
+		titleString = seqDimension + '=' + '%-5.3f' % seqDimensionList[i]
+		if i+1 == len(seqDimensionList):
 			thisPlot = plot2D(copy.copy(sliceDict), whatToPlot,saveResultDir = saveResultDir, colorArray = colorArray, whichRun = whichRun, tDel = tDel, tPen = tPen, tND = tND, N = N, quickName = quickName, titleString = titleString, colorBar = 1, newFigure = 0, plotYLabel = 0)
 		elif i==0:
 			thisPlot = plot2D(copy.copy(sliceDict), whatToPlot,saveResultDir = saveResultDir, colorArray = colorArray, whichRun = whichRun, tDel = tDel, tPen = tPen, tND = tND, N = N, quickName = quickName, titleString = titleString, colorBar = 0, newFigure = 0, plotYLabel = 1)
@@ -61,6 +229,8 @@ def plot2DSeq(sliceDict, whatToPlot, saveResultDir = 'savedResults', whichRun = 
 	elif whatToPlot == 'RT':
 		suptitle('Reaction Time')
 		
+	subplots_adjust(bottom=0.12, right=0.85, top=0.8,left=.065)
+		
 	return
 	
 
@@ -73,7 +243,7 @@ def plot2D( sliceDict, whatToPlot,saveResultDir = 'savedResults', whichRun = 0, 
 		quickName = getLastQuickName(saveResultDir = 'savedResults')
 
 	# Get data:
-	crossTimeData, resultData, dims, settings, numberOfJobs, gitVersion =  getDataAndSettings(quickName, saveResultDir, whichRun)
+	crossTimeData, resultData, dims, settings, FD, numberOfJobs, gitVersion =  getDataAndSettings(quickName, saveResultDir, whichRun)
 	crossTimeData += tND 
 	
 	# Record variable to plot, and then strip input dictionary of that variable:
@@ -106,7 +276,7 @@ def plot2D( sliceDict, whatToPlot,saveResultDir = 'savedResults', whichRun = 0, 
 	xVals = settings[xDimension]
 	yVals = settings[yDimension]
 	if whatToPlot == 'RR':
-		depVar = resultSlice/(crossTimeSlice + tND + tDel + (1-resultSlice)*tPen)
+		depVar = 1000*resultSlice/(crossTimeSlice + tND + tDel + (1-resultSlice)*tPen)
 		heightLabel = 'Reward Rate'
 	elif whatToPlot == 'RT':
 		depVar = crossTimeSlice
@@ -135,14 +305,14 @@ def plot2D( sliceDict, whatToPlot,saveResultDir = 'savedResults', whichRun = 0, 
 
 ################################################################################
 # This function plots a 1-D slice:
-def plot1D( sliceDict, whatToPlot,saveResultDir = 'savedResults', whichRun = 0, tDel = 2000, tPen = 2000, tND = 300, newFigure = 1, quickName = -1):
-	from numpy import transpose, shape, squeeze
+def plot1D( sliceDict, whatToPlot,saveResultDir = 'savedResults', whichRun = 0, tDel = 2000, tPen = 2000, tND = 300, quickName = -1, titleString = -1, newFigure = 1, plotYLabel = 1, yLims = -1, color = -1):
+	from numpy import transpose, shape, squeeze, ndarray
 	import pylab as pl
 	if quickName == -1:
 		quickName = getLastQuickName(saveResultDir = 'savedResults')
 
 	# Get data:
-	crossTimeData, resultData, dims, settings, numberOfJobs, gitVersion =  getDataAndSettings(quickName, saveResultDir, whichRun)
+	crossTimeData, resultData, dims, settings, FD, numberOfJobs, gitVersion =  getDataAndSettings(quickName, saveResultDir, whichRun)
 	crossTimeData += tND 
 	
 	# Record variable to plot, and then strip input dictionary of that variable:
@@ -169,7 +339,7 @@ def plot1D( sliceDict, whatToPlot,saveResultDir = 'savedResults', whichRun = 0, 
 	# Create x-axis values, and plot:
 	xVals = settings[xDimension]
 	if whatToPlot == 'RR':
-		depVar = resultSlice/(crossTimeSlice + tND + tDel + (1-resultSlice)*tPen)
+		depVar = 1000*resultSlice/(crossTimeSlice + tND + tDel + (1-resultSlice)*tPen)
 		yAxisLabel = 'Reward Rate'
 	elif whatToPlot == 'RT':
 		depVar = crossTimeSlice
@@ -177,13 +347,22 @@ def plot1D( sliceDict, whatToPlot,saveResultDir = 'savedResults', whichRun = 0, 
 	elif whatToPlot == 'FC':
 		depVar = resultSlice
 		yAxisLabel = 'Fraction Correct'
+		yLims = (.5,1)
 	else: print ' Unrecognized plot option ' + whatToPlot
 	
 	if newFigure:
 		pl.figure()
-	myPlot = pl.plot(xVals,depVar)
+	if not(isinstance(color,ndarray)):
+		myPlot = pl.plot(xVals,depVar)
+	else:
+		myPlot = pl.plot(xVals,depVar, color = color)
+	if yLims != -1:
+		pl.ylim(yLims[0], yLims[1])
 	pl.xlabel(xDimension)
-	pl.ylabel(yAxisLabel)
+	if plotYLabel:
+		pl.ylabel(yAxisLabel)
+	if titleString != -1:
+		pl.title(titleString)
 	return myPlot
 	
 ################################################################################
@@ -241,7 +420,7 @@ def getSettingsString(quickName = -1, saveResultDir = 'savedResults', whichRun =
 	if quickName == -1:
 		quickName = getLastQuickName(saveResultDir = 'savedResults')
 
-	settings, numberOfJobs, gitVersion = getSettings(quickName, saveResultDir, whichRun)
+	settings, FD, numberOfJobs, gitVersion = getSettings(quickName, saveResultDir, whichRun)
 	params = settings.keys()
 	constParams = []
 	varParams = []
@@ -250,7 +429,11 @@ def getSettingsString(quickName = -1, saveResultDir = 'savedResults', whichRun =
 		else: constParams.append(parameter)
 	constParams.sort
 	varParams.sort
-	settingsString = ' Job "quickName": ' + quickName + '\n'	
+	settingsString = ' Job "quickName": ' + quickName + '\n'
+	if FD:
+		settingsString += ' Fixed-Duration protocol (FD)\n'
+	else:
+		settingsString += ' Reaction-Time protocol (RT)\n'
 	settingsString += ' Parameter Settings:\n'
 	totalLength = 1
 	for parameter in constParams:
@@ -262,7 +445,7 @@ def getSettingsString(quickName = -1, saveResultDir = 'savedResults', whichRun =
 		settingsString += '   %6s: %5.2f %5.2f %3d\n' % (parameter,min(thisSetting),max(thisSetting),len(thisSetting))
 		totalLength *= len(thisSetting)
 
-	settingsString += ' Drif-Diffusion Software version:  %-5s\n' % gitVersion		
+	settingsString += ' Drift-Diffusion Software version:  %-5s\n' % gitVersion		
 	settingsString += ' Number of Parameter Space Points: %-5d\n' % totalLength
 	settingsString += ' Number of Simulations per Point:  %-5d\n' % numberOfJobs
 	settingsString += ' Total number of Simulations:      %-5d' % (totalLength*numberOfJobs)
@@ -312,8 +495,8 @@ def getDataAndSettings(quickName = -1, saveResultDir = 'savedResults', whichRun 
 		quickName = getLastQuickName(saveResultDir = 'savedResults')
 	
 	crossTimeData, resultData, dims = getData(quickName, saveResultDir, whichRun)
-	settings, numberOfJobs, gitVersion = getSettings(quickName, saveResultDir, whichRun)
-	return (crossTimeData, resultData, dims, settings, numberOfJobs, gitVersion)
+	settings, FD, numberOfJobs, gitVersion = getSettings(quickName, saveResultDir, whichRun)
+	return (crossTimeData, resultData, dims, settings, FD, numberOfJobs, gitVersion)
 	
 ################################################################################
 # This function creates a dictionary between file "ID's" and quickNames
