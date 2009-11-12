@@ -28,7 +28,7 @@ def DDMOU(settings, int FD,int perLoc, tempResultDir, quickName, totalUUID):
 	cdef double mean = 0, std = 1
 	cdef unsigned long mySeed[624]
 	cdef c_MTRand myTwister
-	cdef int i, overTime = 0
+	cdef int i, overTime
 	
 	# Convert settings dictionary to iterator:
 	params = settings.keys()
@@ -57,6 +57,7 @@ def DDMOU(settings, int FD,int perLoc, tempResultDir, quickName, totalUUID):
 		crossTimes = 0
 		results = 0
 		for i in range(perLoc):
+			overTime = 0
 			tCurr = 0
 			xCurr = myTwister.randNorm(xMean,xStd)
 			yCurrP = yBegin
@@ -82,7 +83,7 @@ def DDMOU(settings, int FD,int perLoc, tempResultDir, quickName, totalUUID):
 			else:
 				if not(overTime) and yCurrP - yBegin >= theta:
 					results += 1
-				
+
 		resultsArray[counter] = results
 		crossTimesArray[counter] = crossTimes
 		counter += 1

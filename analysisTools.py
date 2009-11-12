@@ -30,7 +30,7 @@ def plot1DSeqMultiLine(sliceDict, whatToPlot, saveResultDir = 'savedResults', wh
 		subplot(1,len(seqDimensionList),i+1)
 		sliceDict[seqDimension] = seqDimensionList[i]
 		titleString = seqDimension + '=' + '%-5.3f' % seqDimensionList[i]
-		yLimsBack = plot1DMultiLine(copy.copy(sliceDict), whatToPlot,saveResultDir = saveResultDir, whichRun = whichRun, tDel = tDel, tPen = tPen, tND = tND, quickName = quickName, titleString = titleString, seqLength = N, newFigure = 0, plotYLabel = 0, yLims = -1, colorBar = 0)
+		yLimsBack = plot1DMultiLine(copy.copy(sliceDict), whatToPlot,saveResultDir = saveResultDir, whichRun = whichRun, tDel = tDel, tPen = tPen, tND = tND, quickName = quickName, titleString = titleString, N = N, newFigure = 0, plotYLabel = 0, yLims = -1, colorBar = 0)
 		if yLimsBack[0] < minY:
 			minY = yLimsBack[0]
 		if yLimsBack[1] > maxY:
@@ -43,11 +43,11 @@ def plot1DSeqMultiLine(sliceDict, whatToPlot, saveResultDir = 'savedResults', wh
 		sliceDict[seqDimension] = seqDimensionList[i]
 		titleString = seqDimension + '=' + '%-5.3f' % seqDimensionList[i]
 		if i==0:
-			thisPlot = plot1DMultiLine(copy.copy(sliceDict), whatToPlot,saveResultDir = saveResultDir, whichRun = whichRun, tDel = tDel, tPen = tPen, tND = tND, quickName = quickName, titleString = titleString, yLims = yLims, seqLength = N, newFigure = 0, plotYLabel = 1, colorBar = 0)
+			thisPlot = plot1DMultiLine(copy.copy(sliceDict), whatToPlot,saveResultDir = saveResultDir, whichRun = whichRun, tDel = tDel, tPen = tPen, tND = tND, quickName = quickName, titleString = titleString, yLims = yLims, N = N, newFigure = 0, plotYLabel = 1, colorBar = 0)
 		elif i == len(seqDimensionList) - 1:
-			thisPlot = plot1DMultiLine(copy.copy(sliceDict), whatToPlot,saveResultDir = saveResultDir, whichRun = whichRun, tDel = tDel, tPen = tPen, tND = tND, quickName = quickName, titleString = titleString, yLims = yLims, seqLength = N, newFigure = 0, plotYLabel = 0, colorBar = 1)	
+			thisPlot = plot1DMultiLine(copy.copy(sliceDict), whatToPlot,saveResultDir = saveResultDir, whichRun = whichRun, tDel = tDel, tPen = tPen, tND = tND, quickName = quickName, titleString = titleString, yLims = yLims, N = N, newFigure = 0, plotYLabel = 0, colorBar = 1)	
 		else:
-			thisPlot = plot1DMultiLine(copy.copy(sliceDict), whatToPlot,saveResultDir = saveResultDir, whichRun = whichRun, tDel = tDel, tPen = tPen, tND = tND, quickName = quickName, titleString = titleString, yLims = yLims, seqLength = N, newFigure = 0, plotYLabel = 0, colorBar = 0)	
+			thisPlot = plot1DMultiLine(copy.copy(sliceDict), whatToPlot,saveResultDir = saveResultDir, whichRun = whichRun, tDel = tDel, tPen = tPen, tND = tND, quickName = quickName, titleString = titleString, yLims = yLims, N = N, newFigure = 0, plotYLabel = 0, colorBar = 0)	
 	
 	if whatToPlot == 'RR':
 		suptitle('Reward Rate')
