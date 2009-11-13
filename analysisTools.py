@@ -257,10 +257,10 @@ def plot2D( sliceDict, whatToPlot,saveResultDir = 'savedResults', whichRun = 0, 
 	permuteList = range(len(dims))
 	whereIsXDim = dims.index(xDimension)
 	whereIsYDim = dims.index(yDimension)
-	dims[0], dims[whereIsXDim] = dims[whereIsXDim], dims[0]
-	dims[1], dims[whereIsYDim] = dims[whereIsYDim], dims[1]
-	permuteList[0], permuteList[whereIsXDim] = permuteList[whereIsXDim], permuteList[0]
-	permuteList[1], permuteList[whereIsYDim] = permuteList[whereIsYDim], permuteList[1]
+	dims[1], dims[whereIsXDim] = dims[whereIsXDim], dims[1]
+	dims[0], dims[whereIsYDim] = dims[whereIsYDim], dims[0]
+	permuteList[1], permuteList[whereIsXDim] = permuteList[whereIsXDim], permuteList[1]
+	permuteList[0], permuteList[whereIsYDim] = permuteList[whereIsYDim], permuteList[0]
 	crossTimeData = transpose(crossTimeData,permuteList)
 	resultData = transpose(resultData,permuteList)
 	
@@ -568,7 +568,6 @@ def getLastQuickName(saveResultDir = 'savedResults'):
 	d2 = IDquickNameDictionary() 
 	myIndex = [d[key][0] for key in iter(d)]
 	myIndexSorted = sorted(myIndex, key=operator.itemgetter(1))
-	print myIndexSorted
 	IDName = myIndexSorted[-1][0]
 	lastQuickName = d2[IDName]
 	return lastQuickName
