@@ -535,11 +535,11 @@ def quickNameIDDictionary(saveResultDir = 'savedResults',includeRepeats = 0):
 				else:
 					tempList = resultDict[quickName]
 					tempList.append((ID, IDTime))
-					tempListSorted = sorted(tempList, key=operator.itemgetter(1),reverse=True)
+					tempListSorted = sorted(tempList, key=operator.itemgetter(1))
 					if includeRepeats:
 						resultDict[quickName] = tempListSorted
 					else:
-						resultDict[quickName] = [tempListSorted[0]]
+						resultDict[quickName] = [tempListSorted[-1]]
 	return resultDict
 
 ################################################################################
@@ -567,8 +567,9 @@ def getLastQuickName(saveResultDir = 'savedResults'):
 	d = quickNameIDDictionary()
 	d2 = IDquickNameDictionary() 
 	myIndex = [d[key][0] for key in iter(d)]
-	myIndexSorted = sorted(myIndex, key=operator.itemgetter(1),reverse=True)
-	IDName = myIndexSorted[0][0]
+	myIndexSorted = sorted(myIndex, key=operator.itemgetter(1))
+	print myIndexSorted
+	IDName = myIndexSorted[-1][0]
 	lastQuickName = d2[IDName]
 	return lastQuickName
 		
