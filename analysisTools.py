@@ -357,6 +357,7 @@ def plot1D( sliceDict, whatToPlot,saveResultDir = 'savedResults', whichRun = 0, 
 		myPlot = pl.plot(xVals,depVar)
 	else:
 		myPlot = pl.plot(xVals,depVar, color = color)
+	pl.xlim((min(xVals),max(xVals)))
 	if yLims != -1:
 		pl.ylim(yLims[0], yLims[1])
 	pl.xlabel(xDimension)
