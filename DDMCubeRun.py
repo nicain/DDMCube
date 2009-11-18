@@ -27,22 +27,22 @@ from subprocess import Popen, PIPE
 settings={									# Example values:
 'A':list(scipy.linspace(0,0,1)),			# 0
 'B':list(scipy.linspace(0,0,1)),			# 0
-'beta':list(scipy.linspace(0,.2,5)),		# 0
-'chop':list(scipy.linspace(0,20,10)),			# 0
-'dt':list(scipy.linspace(.05,.1,1)),		# .02
+'beta':list(scipy.linspace(-.1,.2,5)),		# 0
+'chop':list(scipy.linspace(0,25,5)),			# 0
+'dt':list(scipy.linspace(.5,.1,1)),		# .02
 'K':list(scipy.linspace(.05,.05,1)),		# .05
-'tMax':list(scipy.linspace(2000,2000,1)),	# 10000, or 400->600 in FD paradigm
-'theta':list(scipy.linspace(5,15,3)),		# 10
-'xMean':list(scipy.linspace(3,6,1)),		# 3 = 5%C
-'xStd':list(scipy.linspace(12.8,1,1)),		# 12.8
-'xTau':list(scipy.linspace(20,1,1)),		# 20
-'yBegin':list(scipy.linspace(0,40,5)),		# 40
+'tMax':list(scipy.linspace(500,1000,3)),	# 10000, or 400->600 in FD paradigm
+'theta':list(scipy.linspace(5,15,7)),		# 10
+'xMean':list(scipy.linspace(0,6,3)),		# 3 = 5%C
+'xStd':list(scipy.linspace(10,15,3)),		# 12.8
+'xTau':list(scipy.linspace(15,25,3)),		# 20
+'yBegin':list(scipy.linspace(0,40,4)),		# 40
 'yTau':list(scipy.linspace(10,10,1))		# 0
 }
 
 # Define job parameters:
-quickName = 'negativeBetaSmallyBegin'
-FD=0
+quickName = 'FDTest2'
+FD=1
 numberOfJobs = 5000
 verbose = 1
 multiProc = True
@@ -80,7 +80,7 @@ if multiProc:
 		
 	import pp, math
 	job_server = pp.Server(ppservers=())
-	print ' Starting pp with', job_server.get_ncpus(), 'workers'
+	print ' Starting job with', job_server.get_ncpus(), 'processors:'
 	tBegin = time.mktime(time.localtime())
 	job1 = job_server.submit(DDMOU_help, (settings, FD, math.floor(numberOfJobs/2), tempResultDir, quickName, myUUID, 1,), (), ("DDMCube",))
 	job2 = job_server.submit(DDMOU_help, (settings, FD, numberOfJobs - math.floor(numberOfJobs/2), tempResultDir, quickName, myUUID, 2,), (), ("DDMCube",))
@@ -117,4 +117,6 @@ fOut = open(os.getcwd() + saveResultDir + '/' + quickName + '_' + str(myUUID) + 
 pickle.dump((crossTimesArray, resultsArray, params),fOut)
 
 # Display Computation Time:
-print 'Total Computation Time: ', tEnd - tBegin#time.strftime("H:%H M:%M S:%S",time.gmtime(tEnd - tBegin))
+print 'Total Computation Time: ', time.strftime("H:%H M:%M S:%S",time.gmtime(tEnd - tBegin))
+if numberOfJobs < 1000:
+	for NN in [2000,5000]: print ' Time to complete ' + str(NN) +  ' sims: ', time.strftime("H:%H M:%M S:%S",time.gmtime(NN*totalLength*(tEnd - tBegin)/(totalLength*numberOfJobs)))

@@ -4,7 +4,7 @@
 
 ################################################################################
 # This function plots a sequence  of 1-D multi plots:
-def plot1DSeqMultiLine(sliceDict, whatToPlot, saveResultDir = 'savedResults', whichRun = 0, tDel = 2000, tPen = 2000, tND = 300, newFigure = 1, quickName = -1, seqLength = 4, N=5):
+def plot1DSeqMultiLine(sliceDict, whatToPlot, saveResultDir = 'savedResults', whichRun = -1, tDel = 2000, tPen = 2000, tND = 300, newFigure = 1, quickName = -1, seqLength = 4, N=5):
 	from numpy import array, linspace, inf
 	from pylab import figure, subplot, suptitle, subplots_adjust
 	import copy
@@ -62,7 +62,7 @@ def plot1DSeqMultiLine(sliceDict, whatToPlot, saveResultDir = 'savedResults', wh
 
 ################################################################################
 # This function plots creates a multiline plot:
-def plot1DMultiLine(sliceDict, whatToPlot, saveResultDir = 'savedResults', whichRun = 0, tDel = 2000, tPen = 2000, tND = 300, newFigure = 1, quickName = -1, N = 5, colorBar = 1, titleString = -1, yLims = -1, plotYLabel = 1, color = []):
+def plot1DMultiLine(sliceDict, whatToPlot, saveResultDir = 'savedResults', whichRun = -1, tDel = 2000, tPen = 2000, tND = 300, newFigure = 1, quickName = -1, N = 5, colorBar = 1, titleString = -1, yLims = -1, plotYLabel = 1, color = []):
 	from numpy import array, linspace, inf
 	from pylab import figure, subplots_adjust, cm, flipud, pcolor, colorbar, hold
 	import copy
@@ -114,7 +114,7 @@ def plot1DMultiLine(sliceDict, whatToPlot, saveResultDir = 'savedResults', which
 
 ################################################################################
 # This function plots a sequence  of 1-D plots:
-def plot1DSeq(sliceDict, whatToPlot, saveResultDir = 'savedResults', whichRun = 0, tDel = 2000, tPen = 2000, tND = 300, newFigure = 1, quickName = -1, seqLength = 4):
+def plot1DSeq(sliceDict, whatToPlot, saveResultDir = 'savedResults', whichRun = -1, tDel = 2000, tPen = 2000, tND = 300, newFigure = 1, quickName = -1, seqLength = 4):
 	from numpy import array, linspace, inf
 	from pylab import figure, subplot, suptitle, subplots_adjust
 	import copy
@@ -173,7 +173,7 @@ def plot1DSeq(sliceDict, whatToPlot, saveResultDir = 'savedResults', whichRun = 
 
 ################################################################################
 # This function plots a sequence  of 2-D slices:
-def plot2DSeq(sliceDict, whatToPlot, saveResultDir = 'savedResults', whichRun = 0, tDel = 2000, tPen = 2000, tND = 300, newFigure = 1, colorArray = [], N = 20, quickName = -1, seqLength = 4,  colorBar = 1):
+def plot2DSeq(sliceDict, whatToPlot, saveResultDir = 'savedResults', whichRun = -1, tDel = 2000, tPen = 2000, tND = 300, newFigure = 1, colorArray = [], N = 20, quickName = -1, seqLength = 4,  colorBar = 1):
 	from numpy import array, linspace, inf
 	from pylab import figure, subplot, colorbar, suptitle, subplots_adjust
 	import copy
@@ -233,11 +233,10 @@ def plot2DSeq(sliceDict, whatToPlot, saveResultDir = 'savedResults', whichRun = 
 	subplots_adjust(bottom=0.12, right=0.85, top=0.8,left=.065)
 		
 	return
-	
 
 ################################################################################
 # This function plots a 2-D slice:
-def plot2D( sliceDict, whatToPlot,saveResultDir = 'savedResults', whichRun = 0, tDel = 2000, tPen = 2000, tND = 300, newFigure = 1, colorArray = [], N = 20, quickName = -1, colorBar = 1, plotYLabel = 1, titleString = -1):
+def plot2D( sliceDict, whatToPlot,saveResultDir = 'savedResults', whichRun = -1, tDel = 2000, tPen = 2000, tND = 300, newFigure = 1, colorArray = [], N = 20, quickName = -1, colorBar = 1, plotYLabel = 1, titleString = -1):
 	from numpy import transpose, shape, squeeze, array
 	import pylab as pl
 	if quickName == -1:
@@ -268,10 +267,9 @@ def plot2D( sliceDict, whatToPlot,saveResultDir = 'savedResults', whichRun = 0, 
 	crossDims = dims[:]
 	resultDims = dims[:]
 	for collapseDim in iter(sliceDict):
-		crossTimeData, crossDims = reduce1D(crossTimeData, crossDims, collapseDim, settings[collapseDim], sliceDict[collapseDim])
-		resultData, resultDims = reduce1D(resultData, resultDims, collapseDim, settings[collapseDim], sliceDict[collapseDim])
+		crossTimeData, resultData, crossDims = reduce1D(crossTimeData, resultData, crossDims, collapseDim, settings[collapseDim], sliceDict[collapseDim], tDel = tDel, tPen = tPen, tND = tND)
 	crossTimeSlice = squeeze(crossTimeData)
-	resultSlice = squeeze(resultData) 
+	resultSlice = squeeze(resultData)
 	
 	# Create x-axis values, and plot:
 	xVals = settings[xDimension]
@@ -306,7 +304,7 @@ def plot2D( sliceDict, whatToPlot,saveResultDir = 'savedResults', whichRun = 0, 
 
 ################################################################################
 # This function plots a 1-D slice:
-def plot1D( sliceDict, whatToPlot,saveResultDir = 'savedResults', whichRun = 0, tDel = 2000, tPen = 2000, tND = 300, quickName = -1, titleString = -1, newFigure = 1, plotYLabel = 1, yLims = -1, color = -1):
+def plot1D( sliceDict, whatToPlot,saveResultDir = 'savedResults', whichRun = -1, tDel = 2000, tPen = 2000, tND = 300, quickName = -1, titleString = -1, newFigure = 1, plotYLabel = 1, yLims = -1, color = -1):
 	from numpy import transpose, shape, squeeze, ndarray
 	import pylab as pl
 	if quickName == -1:
@@ -332,10 +330,9 @@ def plot1D( sliceDict, whatToPlot,saveResultDir = 'savedResults', whichRun = 0, 
 	crossDims = dims[:]
 	resultDims = dims[:]
 	for collapseDim in iter(sliceDict):
-		crossTimeData, crossDims = reduce1D(crossTimeData, crossDims, collapseDim, settings[collapseDim], sliceDict[collapseDim])
-		resultData, resultDims = reduce1D(resultData, resultDims, collapseDim, settings[collapseDim], sliceDict[collapseDim])
+		crossTimeData, resultData, crossDims = reduce1D(crossTimeData, resultData, crossDims, collapseDim, settings[collapseDim], sliceDict[collapseDim], tDel = tDel, tPen = tPen, tND = tND)
 	crossTimeSlice = squeeze(crossTimeData)
-	resultSlice = squeeze(resultData) 
+	resultSlice = squeeze(resultData)
 	
 	# Create x-axis values, and plot:
 	xVals = settings[xDimension]
@@ -369,27 +366,76 @@ def plot1D( sliceDict, whatToPlot,saveResultDir = 'savedResults', whichRun = 0, 
 	
 ################################################################################
 # This function reduces the dimension of a cube by 1, along a given slice:
-def reduce1D(cube, dims, varToReduce, vals, sliceVal):
+def reduce1D(crossTimeCube, resultCube, dims, varToReduce, vals, sliceVal, tDel = 2000, tPen = 2000, tND = 300):
 
-	for i in range(len(vals)-1):
-		if vals[i] <= sliceVal and sliceVal < vals[i+1]:
-			lInd=i
-			rInd=i+1
-			break
-	indexListL = [slice(None,None)]*len(dims)
-	indexListR = indexListL[:]
-	indToSet = dims.index(varToReduce)
-	if vals[-1] != sliceVal:
-		indexListL[indToSet] = lInd
-		indexListR[indToSet] = rInd
-		cubeL = cube[tuple(indexListL)]
-		cubeR = cube[tuple(indexListR)]
-		cubeReduce = (cubeL*float(vals[rInd] - sliceVal) + cubeR*float(sliceVal - vals[lInd]))/float(vals[rInd] - vals[lInd])
+	if varToReduce == 'theta' and sliceVal == 'Optimize':
+		reduceTuple = reduceThetaOptimize(crossTimeCube, resultCube, dims, tDel = tDel, tPen = tPen, tND = tND)
+		return reduceTuple
 	else:
-		indexListR[indToSet] = -1
-		cubeReduce = cube[tuple(indexListR)]
-	dims.remove(varToReduce)
-	return (cubeReduce, dims)
+		for i in range(len(vals)-1):
+			if vals[i] <= sliceVal and sliceVal < vals[i+1]:
+				lInd=i
+				rInd=i+1
+				break
+		indexListL = [slice(None,None)]*len(dims)
+		indexListR = indexListL[:]
+		indToSet = dims.index(varToReduce)
+		if vals[-1] != sliceVal:
+			indexListL[indToSet] = lInd
+			indexListR[indToSet] = rInd
+			crossTimeCubeL = crossTimeCube[tuple(indexListL)]
+			crossTimeCubeR = crossTimeCube[tuple(indexListR)]
+			crossTimeCubeReduce = (crossTimeCubeL*float(vals[rInd] - sliceVal) + crossTimeCubeR*float(sliceVal - vals[lInd]))/float(vals[rInd] - vals[lInd])
+			resultCubeL = resultCube[tuple(indexListL)]
+			resultCubeR = resultCube[tuple(indexListR)]
+			resultCubeReduce = (resultCubeL*float(vals[rInd] - sliceVal) + resultCubeR*float(sliceVal - vals[lInd]))/float(vals[rInd] - vals[lInd])
+		else:
+			indexListR[indToSet] = -1
+			crossTimeCubeReduce = crossTimeCube[tuple(indexListR)]
+			resultCubeReduce = resultCube[tuple(indexListR)]
+		dims.remove(varToReduce)
+		return (crossTimeCubeReduce, resultCubeReduce, dims)
+	
+################################################################################
+# This function reduces the Theta dimension through RR optimization:
+def reduceThetaOptimize(crossTimeCube, resultCube, dims, tDel = 2000, tPen = 2000, tND = 300):
+	import numpy as np
+	import itertools
+
+	# Create RR Cube:
+	RRCube = resultCube/(crossTimeCube + tND + tDel + (1-resultCube)*tPen)
+	
+	# Cut down input Arrays by the theta dimension:
+	indexList = [slice(None,None)]*len(dims)
+	indToSet = dims.index('theta')
+	indexList[indToSet] = 0
+	crossTimeCubeReduce = crossTimeCube[tuple(indexList)]
+	resultCubeReduce = resultCube[tuple(indexList)]
+	
+	# Pick Optimal entries:
+	indexList = [slice(None,None)]*len(dims)
+	indToSet = dims.index('theta')
+	iterList = [range(dimLength) for dimLength in np.shape(RRCube)]
+	iterList[indToSet] = [0]
+	for indexTuple in itertools.product(*iterList):
+		indexList = list(indexTuple)
+		indexListOut = indexList[:]
+		indexList[indToSet] = slice(None,None)
+		tmp = indexListOut.pop(indToSet)
+		currThetaList = RRCube[tuple(indexList)]
+		indexList[indToSet] = currThetaList.argmax()
+		crossTimeCubeReduce[tuple(indexListOut)] = crossTimeCube[tuple(indexList)]
+		resultCubeReduce[tuple(indexListOut)] = resultCube[tuple(indexList)]
+		
+
+
+
+
+
+
+	dims.remove('theta')
+	return (crossTimeCubeReduce, resultCubeReduce, dims)
+	
 
 ################################################################################
 # This function lists the job names that are available:
@@ -408,7 +454,7 @@ def listNames(saveResultDir = 'savedResults'):
 
 ################################################################################
 # This function prints out a nicely formatted settings string:
-def printSettings(quickName = -1, saveResultDir = 'savedResults', whichRun = 0):
+def printSettings(quickName = -1, saveResultDir = 'savedResults', whichRun = -1):
 	if quickName == -1:
 		quickName = getLastQuickName(saveResultDir = 'savedResults')
 
@@ -418,7 +464,7 @@ def printSettings(quickName = -1, saveResultDir = 'savedResults', whichRun = 0):
 
 ################################################################################
 # This function gets the settings string from a file:
-def getSettingsString(quickName = -1, saveResultDir = 'savedResults', whichRun = 0):
+def getSettingsString(quickName = -1, saveResultDir = 'savedResults', whichRun = -1):
 	if quickName == -1:
 		quickName = getLastQuickName(saveResultDir = 'savedResults')
 
@@ -466,7 +512,7 @@ def getFileString(ID, typeOfFile,  saveResultDir = 'savedResults'):
 
 ################################################################################
 # This function grabs the data for a given quickName:
-def getData(quickName = -1, saveResultDir = 'savedResults', whichRun = 0):
+def getData(quickName = -1, saveResultDir = 'savedResults', whichRun = -1):
 	import pickle
 	if quickName == -1:
 		quickName = getLastQuickName(saveResultDir = 'savedResults')
@@ -479,7 +525,7 @@ def getData(quickName = -1, saveResultDir = 'savedResults', whichRun = 0):
 
 ################################################################################
 # This function grabs the settings for a given quickName:
-def getSettings(quickName = -1, saveResultDir = 'savedResults', whichRun = 0):
+def getSettings(quickName = -1, saveResultDir = 'savedResults', whichRun = -1):
 	import pickle
 	if quickName == -1:
 		quickName = getLastQuickName(saveResultDir = 'savedResults')
@@ -492,7 +538,7 @@ def getSettings(quickName = -1, saveResultDir = 'savedResults', whichRun = 0):
 
 ################################################################################
 # This function grabs the results and settings for a given quickName:
-def getDataAndSettings(quickName = -1, saveResultDir = 'savedResults', whichRun = 0):
+def getDataAndSettings(quickName = -1, saveResultDir = 'savedResults', whichRun = -1):
 	if quickName == -1:
 		quickName = getLastQuickName(saveResultDir = 'savedResults')
 	
@@ -544,7 +590,7 @@ def quickNameIDDictionary(saveResultDir = 'savedResults',includeRepeats = 0):
 
 ################################################################################
 # This function grabs the ID for a given quickName:
-def quickNameToID(quickName = -1, saveResultDir = 'savedResults', whichRun = 0):
+def quickNameToID(quickName = -1, saveResultDir = 'savedResults', whichRun = -1):
 	import operator
 	if quickName == -1:
 		quickName = getLastQuickName(saveResultDir = 'savedResults')
@@ -571,4 +617,12 @@ def getLastQuickName(saveResultDir = 'savedResults'):
 	IDName = myIndexSorted[-1][0]
 	lastQuickName = d2[IDName]
 	return lastQuickName
+	
+################################################################################
+# This function gets the number of trials for a given quickname:
+def getTrials(quickName = -1, saveResultDir = 'savedResults'):
+	if quickName == -1:
+		quickName = getLastQuickName(saveResultDir = 'savedResults')
 		
+	d = quickNameIDDictionary(saveResultDir = saveResultDir, includeRepeats = 1)
+	return len(d[quickName])
