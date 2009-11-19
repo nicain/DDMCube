@@ -27,25 +27,25 @@ from subprocess import Popen, PIPE
 settings={									# Example values:
 'A':list(scipy.linspace(0,0,1)),			# 0
 'B':list(scipy.linspace(0,0,1)),			# 0
-'beta':list(scipy.linspace(-.1,.2,5)),		# 0
-'chop':list(scipy.linspace(0,25,5)),			# 0
+'beta':list(scipy.linspace(0,.2,1)),		# 0
+'chop':list(scipy.linspace(0,25,1)),			# 0
 'dt':list(scipy.linspace(.5,.1,1)),		# .02
 'K':list(scipy.linspace(.05,.05,1)),		# .05
-'tMax':list(scipy.linspace(500,1000,3)),	# 10000, or 400->600 in FD paradigm
-'theta':list(scipy.linspace(5,15,7)),		# 10
-'xMean':list(scipy.linspace(0,6,3)),		# 3 = 5%C
-'xStd':list(scipy.linspace(10,15,3)),		# 12.8
-'xTau':list(scipy.linspace(15,25,3)),		# 20
+'tMax':list(scipy.linspace(700,1000,1)),	# 10000, or 400->600 in FD paradigm
+'theta':list(scipy.linspace(5,15,20)),		# 10
+'xMean':list(scipy.linspace(3,6,1)),		# 3 = 5%C
+'xStd':list(scipy.linspace(12.8,15,1)),		# 12.8
+'xTau':list(scipy.linspace(20,25,1)),		# 20
 'yBegin':list(scipy.linspace(0,40,4)),		# 40
 'yTau':list(scipy.linspace(10,10,1))		# 0
 }
 
 # Define job parameters:
-quickName = 'FDTest2'
+quickName = 'Test1'
 FD=1
 numberOfJobs = 5000
 verbose = 1
-multiProc = True
+runType = 'localCluster' # Options: 'singleCore', 'dualCore', 'localCluster'
 
 # Set up saving directories
 tempResultDir = '/simResults'
@@ -71,26 +71,49 @@ fOutSet.close()
 analysisTools.printSettings(quickName, saveResultDir)
 
 # Run the job:
-if multiProc:
+if runType == 'localCluster' or runType == 'dualCore':
+	import pp, math, ppUWTools
+	from time import sleep
+	
+	# Define a helper routine to pass through with pp package:
 	def DDMOU_help(settings, FD, perLoc, tempResultDir, quickName, totalUUID, procNum):
 		try:
 		 	DDMCube.DDMOU(settings, FD, perLoc, tempResultDir, quickName, totalUUID)
-			return '   Sub-simulation ' + str(procNum) + ' Complete'
+			return '   Sub-simulation ' + str(procNum + 1) + ' Complete'
 		except: sys.exit(-1)
-		
-	import pp, math
-	job_server = pp.Server(ppservers=())
-	print ' Starting job with', job_server.get_ncpus(), 'processors:'
+
+	if runType == 'dualCore':
+		ppservers=()
+		job_server = pp.Server(ppservers=ppservers)
+		numOfProc = job_server.get_ncpus()		
+	else:
+		ppservers=("fig.amath.washington.edu:8080","lemon.amath.washington.edu:8080", "grape.amath.washington.edu:8080", "watermelon.amath.washington.edu:8080")
+		ppservers=("fig.amath.washington.edu:8080","lemon.amath.washington.edu:8080", "grape.amath.washington.edu:8080", "watermelon.amath.washington.edu:8080", "pineapple.amath.washington.edu:8080", "peach.amath.washington.edu:8080")
+		ppUWTools.startServers(ppservers = ppservers)
+		job_server = pp.Server(ppservers = ppservers)		
+		sleep(10)
+		nodeDict = job_server.get_active_nodes()
+		print '     ', nodeDict
+		numOfProc = 0
+		for node in iter(nodeDict):
+			numOfProc += nodeDict[node]
+
+	print ' Starting job with ', str(numOfProc), ' processors:'
 	tBegin = time.mktime(time.localtime())
-	job1 = job_server.submit(DDMOU_help, (settings, FD, math.floor(numberOfJobs/2), tempResultDir, quickName, myUUID, 1,), (), ("DDMCube",))
-	job2 = job_server.submit(DDMOU_help, (settings, FD, numberOfJobs - math.floor(numberOfJobs/2), tempResultDir, quickName, myUUID, 2,), (), ("DDMCube",))
-	print job1()
-	print job2()
+	jobs = [(i+1,job_server.submit(DDMOU_help, (settings, FD, math.floor(numberOfJobs/numOfProc), tempResultDir, quickName, myUUID, i,), (), ("DDMCube",))) for i in range(numOfProc-1)]
+	jobs.append((numOfProc, job_server.submit(DDMOU_help, (settings, FD, numberOfJobs - math.floor(numberOfJobs/numOfProc)*(numOfProc-1), tempResultDir, quickName, myUUID, numOfProc - 1,), (), ("DDMCube",))))
+	for indexNum, job in jobs:
+		result = job()
+		print result
 	tEnd = time.mktime(time.localtime())
-else:
+	if runType == 'localCluster': ppUWTools.killAllServers(ppservers = ppservers)
+elif runType == 'singleCore':
 	tBegin = time.mktime(time.localtime())
 	DDMCube.DDMOU(settings, FD, numberOfJobs, tempResultDir, quickName, myUUID)
 	tEnd = time.mktime(time.localtime())
+else:
+	print 'Unrecognized runType option.  Exiting...'
+	sys.exit(-1)
 
 # Collect results:
 resultsArray = scipy.zeros(totalLength, dtype=float)
@@ -120,3 +143,4 @@ pickle.dump((crossTimesArray, resultsArray, params),fOut)
 print 'Total Computation Time: ', time.strftime("H:%H M:%M S:%S",time.gmtime(tEnd - tBegin))
 if numberOfJobs < 1000:
 	for NN in [2000,5000]: print ' Time to complete ' + str(NN) +  ' sims: ', time.strftime("H:%H M:%M S:%S",time.gmtime(NN*totalLength*(tEnd - tBegin)/(totalLength*numberOfJobs)))
+job_server.print_stats()
